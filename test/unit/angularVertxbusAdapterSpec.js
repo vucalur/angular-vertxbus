@@ -382,7 +382,7 @@ describe('knalli.angular-vertxbus', function () {
         }, 1000);
       });
 
-      it('"system login succeeded"', function (done) {
+      it('"system login succeeded" inspect broadcast event', function (done) {
         var result;
         $rootScope.$on('vertx-eventbus.system.login.succeeded', function () {
           result = true;
@@ -396,7 +396,15 @@ describe('knalli.angular-vertxbus', function () {
         }, 1000);
       });
 
-      it('"system login failed"', function (done) {
+      it('"system login succeeded" inspect promise resolution', function (done) {
+        vertxEventBusService.login('username', 'password')
+          .then(function (result) {
+            expect(result.status).to.be("ok");
+            done();
+          });
+      });
+
+      it('"system login failed" inspect broadcast event', function (done) {
         var result;
         SockJS.currentMockInstance.nextLoginState = false;
         $rootScope.$on('vertx-eventbus.system.login.failed', function () {
@@ -410,6 +418,16 @@ describe('knalli.angular-vertxbus', function () {
             expect(result).to.be(true);
           }, 1000);
         }, 1000);
+      });
+
+      it('"system login failed" inspect promise resolution', function (done) {
+        SockJS.currentMockInstance.nextLoginState = false;
+        vertxEventBusService.login('username', 'password')
+          .then(null, function (result) {
+            expect(result.status).to.be("denied");
+            SockJS.currentMockInstance.nextLoginState = true;
+            done();
+          });
       });
     });
 
